@@ -1,55 +1,255 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101d30">
-  <title>AutoCheck România — verificare VIN gratuită</title>
-  <meta name="description" content="Verifică gratuit seria VIN. Introdu manual seria sau încarcă o fotografie pentru citire automată.">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101c30">
+<title>AutoCheck România</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1424;color:#f4f7fc;font-family:Arial,sans-serif}
+header{padding:25px 16px;text-align:center;background:#14243c}
+header h1{margin:0;color:#49c6ff;font-size:28px}
+header p{color:#c3d1e5}
+main{max-width:850px;margin:25px auto;padding:15px}
+.card{background:#17263d;border:1px solid #30435e;border-radius:15px;padding:20px;margin-bottom:18px}
+h2{font-size:20px;color:#61caff}
+input,select{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:1px solid #536782;background:#0d192b;color:white;font-size:16px}
+button,.link{display:inline-block;padding:13px 17px;border:0;border-radius:8px;background:#078bd0;color:white;font-weight:bold;text-decoration:none;cursor:pointer;margin:5px 3px}
+button:hover,.link:hover{background:#0874ac}
+.secondary{background:#344963}
+.result{line-height:1.8;overflow-wrap:anywhere}
+.muted{color:#b7c5d8;font-size:13px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+footer{text-align:center;color:#9cacc0;padding:25px;font-size:13px}
+.status{padding:12px;background:#0c1b30;border-radius:8px;margin-top:12px}
+</style>
 </head>
 <body>
-  <main class="shell">
-    <header class="top">
-      <div class="logo">AC</div>
-      <div><div class="brand">AutoCheck România</div><div class="tag">Verificare VIN gratuită</div></div>
-      <span class="free">GRATUIT</span>
-    </header>
+<header>
+<h1>🚗 AutoCheck România</h1>
+<p>Verifică gratuit informațiile disponibile despre mașina ta</p>
+</header>
 
-    <section class="hero">
-      <p class="eyebrow">ÎNAINTE SĂ CUMPERI O MAȘINĂ</p>
-      <h1>Verifică seria VIN<br><span>în câțiva pași.</span></h1>
-      <p class="intro">Introdu seria VIN sau încarcă o fotografie cu seria de pe certificat, parbriz ori caroserie.</p>
-    </section>
+<main>
+<section class="card">
+<h2>1. Verificare după seria VIN</h2>
+<p class="muted">Introdu seria VIN a mașinii. Seria trebuie să aibă 17 caractere.</p>
+<input id="vin" maxlength="17" placeholder="Introdu seria VIN">
+<div class="grid">
+<button onclick="decodeVIN()">Verifică VIN</button>
+<button class="secondary" onclick="clearVIN()">Șterge</button>
+</div>
+<label for="photo">📷 Fotografiază sau încarcă seria VIN:</label>
+<input id="photo" type="file" accept="image/*" capture="environment">
+<button onclick="readPhoto()">Citește VIN din fotografie</button>
+<div id="ocrStatus" class="status muted">Poți folosi camera telefonului sau o fotografie din galerie.</div>
+<div id="result" class="result status" aria-live="polite">Rezultatele verificării vor apărea aici.</div>
+</section>
 
-    <section class="panel">
-      <label for="vin">Seria VIN</label>
-      <input id="vin" type="text" maxlength="17" autocomplete="off" autocapitalize="characters"
-        placeholder="Ex.: WVWZZZ1KZAW000001">
-      <p class="hint">Introdu seria VIN a mașinii.</p>
+<section class="card">
+<h2>2. Verificări pentru România</h2>
+<p class="muted">Introdu numărul de înmatriculare pentru a-l avea la îndemână.</p>
+<input id="plate" placeholder="Exemplu: BC 12 ABC">
+<div class="grid">
+<a class="link" href="https://prog.rarom.ro/rarpol/" target="_blank" rel="noopener">Verificare ITP – RAR</a>
+<a class="link" href="https://www.erovinieta.ro/" target="_blank" rel="noopener">Verificare rovinietă</a>
+<a class="link" href="https://www.aida.info.ro/" target="_blank" rel="noopener">Verificare RCA – AIDA</a>
+</div>
+<p class="muted">Verificările se efectuează pe portalurile oficiale. Site-ul nostru nu primește automat rezultatele acestora.</p>
+</section>
 
-      <div class="actions">
-        <button id="check" class="primary">Verifică</button>
-        <label class="upload" for="photo"><span aria-hidden="true">📷</span> Fotografiază sau adaugă o poză cu VIN-ul</label>
-        <input id="photo" type="file" accept="image/*" capture="environment" hidden>
-      </div>
-      <p class="hint camera-hint">Poți folosi și camera telefonului. După citire, verifică seria găsită înainte de verificare.</p>
-      <div id="scan" class="scan" role="status" aria-live="polite"></div>
-      <img id="preview" class="preview" alt="Fotografia încărcată" hidden>
-    </section>
+<section class="card">
+<h2>3. Verificări pentru țara de proveniență</h2>
+<select id="country">
+<option value="">Alege țara</option>
+<option value="ro">România</option>
+<option value="de">Germania</option>
+<option value="fr">Franța</option>
+<option value="it">Italia</option>
+<option value="be">Belgia</option>
+<option value="nl">Olanda</option>
+</select>
+<button onclick="countryCheck()">Arată verificările disponibile</button>
+<div id="countryResult" class="status result">Alege țara mașinii.</div>
+</section>
 
-    <section id="result" class="result" aria-live="polite">
-      <div class="result-icon">ⓘ</div>
-      <div><strong>Raportul mașinii va apărea aici</strong><p>Nu afișăm daune, kilometri sau proveniență fără o sursă verificabilă.</p></div>
-    </section>
+<section class="card">
+<h2>4. Ce poate verifica AutoCheck?</h2>
+<ul class="result">
+<li>Marca și modelul, când sunt disponibile.</li>
+<li>Anul și caracteristicile tehnice.</li>
+<li>Acces către registre oficiale de verificare.</li>
+<li>Informații despre kilometraj și daune, numai dacă există surse disponibile.</li>
+</ul>
+<p class="muted">Lipsa unei înregistrări nu înseamnă că mașina nu a avut accidente sau că kilometrajul este real.</p>
+</section>
 
-    <section class="notice">
-      <strong>Important despre date</strong>
-      <p>Versiunea inițială poate verifica formatul VIN și poate încerca decodificarea unor date tehnice printr-o bază publică orientată în principal spre vehiculele din SUA. Nu oferă automat istoricul complet al daunelor sau kilometrajului pentru mașinile din Europa.</p>
-    </section>
-    <footer>AutoCheck România · Prototip gratuit · Fotografia este procesată în browser pentru citirea VIN.</footer>
-  </main>
-  <script src="app.js"></script>
+<section class="card">
+<h2>5. Confidențialitate</h2>
+<p class="muted">Nu este necesar cont. VIN-ul este transmis către serviciul extern NHTSA pentru decodificare. Fotografia este procesată în browser. Numărul de înmatriculare nu este transmis automat către servicii externe.</p>
+</section>
+</main>
+
+<footer>AutoCheck România · Versiunea 1.0 · Verificări gratuite</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function clearVIN(){
+ $("vin").value="";
+ $("result").textContent="Introdu o serie VIN pentru verificare.";
+}
+
+function validVIN(v){
+ return /^[A-HJ-NPR-Z0-9]{17}$/.test(v);
+}
+
+async function decodeVIN(){
+ const vin=$("vin").value.trim().toUpperCase();
+ $("vin").value=vin;
+
+ if(!validVIN(vin)){
+  $("result").textContent="Seria VIN trebuie să aibă 17 caractere și să nu conțină I, O sau Q.";
+  return;
+ }
+
+ $("result").textContent="Se caută datele tehnice...";
+
+ try{
+  const url="https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/"+encodeURIComponent(vin)+"?format=json";
+  const response=await fetch(url);
+
+  if(!response.ok) throw new Error("Serviciul nu răspunde.");
+
+  const data=await response.json();
+  const d=data.Results && data.Results[0];
+
+  if(!d) throw new Error("Nu au fost returnate date.");
+
+  const fields=[
+   ["Marcă",d.Make],
+   ["Model",d.Model],
+   ["An fabricație",d.ModelYear],
+   ["Caroserie",d.BodyClass],
+   ["Motor",d.DisplacementL ? d.DisplacementL+" litri" : ""],
+   ["Combustibil",d.FuelTypePrimary],
+   ["Țară de fabricație",d.PlantCountry],
+   ["Producător",d.Manufacturer]
+  ];
+
+  let html="<h3>Rezultatul decodificării VIN</h3>";
+
+  fields.forEach(([label,value])=>{
+   if(value && value!=="Not Applicable" && value!=="0"){
+    html+="<p><strong>"+label+":</strong> "+escapeHTML(value)+"</p>";
+   }
+  });
+
+  html+="<p class='muted'>Sursa: NHTSA. Serviciul este orientat în principal spre vehiculele de pe piața SUA. Datele pot fi incomplete pentru mașinile europene.</p>";
+  html+="<p class='muted'>Acesta NU este un raport de daune, kilometraj sau istoric complet.</p>";
+
+  $("result").innerHTML=html;
+
+ }catch(e){
+  $("result").textContent="Nu am putut obține datele. Verifică internetul și încearcă din nou.";
+ }
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ }[c]));
+}
+
+async function readPhoto(){
+ const file=$("photo").files[0];
+
+ if(!file){
+  $("ocrStatus").textContent="Alege mai întâi o fotografie.";
+  return;
+ }
+
+ if(!window.Tesseract){
+  $("ocrStatus").textContent="Biblioteca de citire nu s-a încărcat. Verifică internetul.";
+  return;
+ }
+
+ $("ocrStatus").textContent="Citesc fotografia. Poate dura puțin...";
+
+ try{
+  const result=await Tesseract.recognize(file,"eng");
+  const text=result.data.text.toUpperCase().replace(/[^A-Z0-9]/g," ");
+  const candidates=text.match(/[A-HJ-NPR-Z0-9]{17}/g)||[];
+
+  if(candidates.length){
+   $("vin").value=candidates[0];
+   $("ocrStatus").textContent="Am găsit o posibilă serie VIN. Verific-o înainte să continui.";
+  }else{
+   $("ocrStatus").textContent="Nu am găsit o serie VIN sigură. Încearcă o fotografie mai clară sau introdu seria manual.";
+  }
+
+ }catch(e){
+  $("ocrStatus").textContent="Fotografia nu a putut fi citită. Încearcă din nou.";
+ }
+}
+
+function countryCheck(){
+ const c=$("country").value;
+
+ const links={
+  ro:[
+   ["RAR – ITP","https://prog.rarom.ro/rarpol/"],
+   ["Rovinietă","https://www.erovinieta.ro/"],
+   ["RCA – AIDA","https://www.aida.info.ro/"]
+  ],
+  fr:[
+   ["HistoVec – istoric oficial","https://histovec.interieur.gouv.fr/"]
+  ],
+  be:[
+   ["Car-Pass – kilometraj","https://www.car-pass.be/"]
+  ],
+  nl:[
+   ["RDW – verificare vehicul","https://ovi.rdw.nl/"]
+  ],
+  it:[
+   ["Portale dell'Automobilista","https://www.ilportaledellautomobilista.it/"]
+  ],
+  de:[
+   ["KBA – autoritatea federală","https://www.kba.de/"]
+  ]
+ };
+
+ if(!c){
+  $("countryResult").textContent="Selectează mai întâi o țară.";
+  return;
+ }
+
+ const names={
+  ro:"România",
+  fr:"Franța",
+  be:"Belgia",
+  nl:"Olanda",
+  it:"Italia",
+  de:"Germania"
+ };
+
+ let html="<strong>Surse pentru "+names[c]+"</strong>";
+
+ links[c].forEach(([name,url])=>{
+  html+="<p><a class='link' href='"+url+"' target='_blank' rel='noopener'>"+name+"</a></p>";
+ });
+
+ html+="<p class='muted'>Accesul și datele solicitate diferă de la un registru la altul. Unele verificări necesită numărul de înmatriculare, documente sau acordul proprietarului.</p>";
+
+ $("countryResult").innerHTML=html;
+}
+</script>
 </body>
 </html>
