@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101d30">
+  <title>AutoCheck România — verificare VIN gratuită</title>
+  <meta name="description" content="Verifică gratuit seria VIN. Introdu manual seria sau încarcă o fotografie pentru citire automată.">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div class="logo">AC</div>
+      <div><div class="brand">AutoCheck România</div><div class="tag">Verificare VIN gratuită</div></div>
+      <span class="free">GRATUIT</span>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">ÎNAINTE SĂ CUMPERI O MAȘINĂ</p>
+      <h1>Verifică seria VIN<br><span>în câțiva pași.</span></h1>
+      <p class="intro">Introdu seria VIN sau încarcă o fotografie cu seria de pe certificat, parbriz ori caroserie.</p>
+    </section>
+
+    <section class="panel">
+      <label for="vin">Seria VIN</label>
+      <input id="vin" type="text" maxlength="17" autocomplete="off" autocapitalize="characters"
+        placeholder="Ex.: WVWZZZ1KZAW000001">
+      <p class="hint">Introdu seria VIN a mașinii.</p>
+
+      <div class="actions">
+        <button id="check" class="primary">Verifică</button>
+        <label class="upload" for="photo"><span aria-hidden="true">📷</span> Fotografiază sau adaugă o poză cu VIN-ul</label>
+        <input id="photo" type="file" accept="image/*" capture="environment" hidden>
+      </div>
+      <p class="hint camera-hint">Poți folosi și camera telefonului. După citire, verifică seria găsită înainte de verificare.</p>
+      <div id="scan" class="scan" role="status" aria-live="polite"></div>
+      <img id="preview" class="preview" alt="Fotografia încărcată" hidden>
+    </section>
+
+    <section id="result" class="result" aria-live="polite">
+      <div class="result-icon">ⓘ</div>
+      <div><strong>Raportul mașinii va apărea aici</strong><p>Nu afișăm daune, kilometri sau proveniență fără o sursă verificabilă.</p></div>
+    </section>
+
+    <section class="notice">
+      <strong>Important despre date</strong>
+      <p>Versiunea inițială poate verifica formatul VIN și poate încerca decodificarea unor date tehnice printr-o bază publică orientată în principal spre vehiculele din SUA. Nu oferă automat istoricul complet al daunelor sau kilometrajului pentru mașinile din Europa.</p>
+    </section>
+    <footer>AutoCheck România · Prototip gratuit · Fotografia este procesată în browser pentru citirea VIN.</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
